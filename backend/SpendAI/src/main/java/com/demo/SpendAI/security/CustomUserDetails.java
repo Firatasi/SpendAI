@@ -2,6 +2,7 @@ package com.demo.SpendAI.security;
 
 import com.demo.SpendAI.entity.User;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
@@ -19,7 +20,11 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
+        // role.name() diyerek Enum'ı String'e çeviriyoruz
+        String roleStr = user.getRole().name();
+
+        String roleName = roleStr.startsWith("ROLE_") ? roleStr : "ROLE_" + roleStr;
+        return List.of(new SimpleGrantedAuthority(roleName));
     }
 
     @Override

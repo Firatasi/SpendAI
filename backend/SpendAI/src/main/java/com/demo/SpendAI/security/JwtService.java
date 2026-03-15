@@ -5,6 +5,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -17,9 +18,11 @@ import java.util.function.Function;
 @Service
 public class JwtService {
 
-    // Gerçek projelerde bu key 'application.properties' içinde saklanır.
-    // En az 256-bit uzunluğunda rastgele bir string olmalı.
-    private static final String SECRET_KEY = "kendi_cok_gizli_anahtarini_buraya_yazabilirsin_ama_uzun_olmali";
+    @Value("${application.security.jwt.secret-key}")
+    private String secretKey;
+
+    @Value("${application.security.jwt.expiration}")
+    private long jwtExpiration;
 
     // 1. Token'dan kullanıcı adını çekme
     public String extractUsername(String token) {
@@ -27,16 +30,24 @@ public class JwtService {
     }
 
     // 2. Token üretme (Giriş başarılı olduğunda çağrılacak)
+    // 2. Token üretme (Giriş başarılı olduğunda çağrılacak)
     public String generateToken(UserDetails userDetails) {
-        return generateToken(new HashMap<>(), userDetails);
+        Map<String, Object> extraClaims = new HashMap<>();
+
+        // Kullanıcının rollerini alıp "roles" anahtarıyla ekliyoruz
+        extraClaims.put("roles", userDetails.getAuthorities().stream()
+                .map(grantedAuthority -> grantedAuthority.getAuthority())
+                .toList());
+
+        return generateToken(extraClaims, userDetails);
     }
 
     public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
         return Jwts.builder()
-                .setClaims(extraClaims)
+                .setClaims(extraClaims) // Artık roller burada
                 .setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24)) // 24 Saat geçerli
+                .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration)) // expiration field'ını kullanmak daha iyi
                 .signWith(getSignInKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -71,7 +82,7 @@ public class JwtService {
     }
 
     private Key getSignInKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
+        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 }

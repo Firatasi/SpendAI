@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>SpendAI - Auth</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div id="loginSection">
+            <h2>Giriş Yap</h2>
+            <form id="loginForm">
+                <input type="text" id="logUsername" placeholder="Kullanıcı Adı" required>
+                <input type="password" id="logPassword" placeholder="Şifre" required>
+                <button type="submit" class="btn-login">Giriş</button>
+            </form>
+            <p>Hesabın yok mu? <a href="#" onclick="toggleAuth()">Kayıt Ol</a></p>
+        </div>
+
+        <div id="registerSection" style="display: none;">
+            <h2>Kayıt Ol</h2>
+            <form id="registerForm">
+                <input type="text" id="regUsername" placeholder="Kullanıcı Adı" required>
+                <input type="email" id="regEmail" placeholder="E-posta" required>
+                <input type="password" id="regPassword" placeholder="Şifre" required>
+                <button type="submit" class="btn-reg">Kayıt Ol</button>
+            </form>
+            <p>Zaten üye misin? <a href="#" onclick="toggleAuth()">Giriş Yap</a></p>
+        </div>
+
+        <p id="message"></p>
+    </div>
+    <script src="./app.js"></script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>SpendAI - Anasayfa</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Hoş Geldin Kullanıcı!</h1>
+        <p>Burası harcamalarını yöneteceğin ana sayfa.</p>
+        <button onclick="logout()">Çıkış Yap</button>
+    </div>
+    <script>
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>SpendAI - Admin Panel</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #3498db; color: white; }
+    </style>
+</head>
+<body>
+    <div class="container" style="max-width: 800px;">
+        <h1>Admin Paneli</h1>
+        <h3>Kullanıcı Listesi</h3>
+        <table id="userTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Kullanıcı Adı</th>
+                    <th>Email</th>
+                    <th>Rol</th>
+                </tr>
+            </thead>
+            <tbody id="userList">
+                </tbody>
+        </table>
+        <br>
+        <button onclick="logout()">Çıkış Yap</button>
+    </div>
+
+    <script>
+        async function fetchUsers() {
+            const token = localStorage.getItem('token');
+            try {
+                const token = localStorage.getItem('token');
+console.log("Gönderilen Token:", token); // Konsoldan kontrol et, null olmasın!
+
+const response = await fetch('http://localhost:8080/api/admin/users', {
+    method: 'GET',
+    headers: {
+        'Authorization': 'Bearer ' + token, // Buradaki boşluk hayat kurtarır
+        'Content-Type': 'application/json'
+    }
+});
+                
+                if (response.ok) {
+                    const users = await response.json();
+                    const userList = document.getElementById('userList');
+                    userList.innerHTML = users.map(user => `
+                        <tr>
+                            <td>${user.id}</td>
+                            <td>${user.username}</td>
+                            <td>${user.email}</td>
+                            <td>${user.role}</td>
+                        </tr>
+                    `).join('');
+                } else {
+                    alert("Kullanıcılar yüklenemedi. Yetkin olmayabilir!");
+                }
+            } catch (err) {
+                console.error("Hata:", err);
+            }
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'index.html';
+        }
+
+        // Sayfa yüklendiğinde kullanıcıları çek
+        window.onload = fetchUsers;
+    </script>
+</body>
+</html>
