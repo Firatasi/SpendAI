@@ -8,10 +8,19 @@
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
         th { background-color: #3498db; color: white; }
+        .delete-btn { 
+            background-color: #e74c3c; 
+            color: white; 
+            border: none; 
+            padding: 8px 12px; 
+            cursor: pointer; 
+            border-radius: 4px; 
+        }
+        .delete-btn:hover { background-color: #c0392b; }
     </style>
 </head>
 <body>
-    <div class="container" style="max-width: 800px;">
+    <div class="container" style="max-width: 900px;">
         <h1>Admin Paneli</h1>
         <h3>Kullanıcı Listesi</h3>
         <table id="userTable">
@@ -21,6 +30,7 @@
                     <th>Kullanıcı Adı</th>
                     <th>Email</th>
                     <th>Rol</th>
+                    <th>İşlemler</th>
                 </tr>
             </thead>
             <tbody id="userList">
@@ -31,36 +41,80 @@
     </div>
 
     <script>
+        // Sayfa yüklendiğinde kullanıcıları çek
+        window.onload = fetchUsers;
+
         async function fetchUsers() {
             const token = localStorage.getItem('token');
-            try {
-                const token = localStorage.getItem('token');
-console.log("Gönderilen Token:", token); // Konsoldan kontrol et, null olmasın!
+            if (!token) {
+                window.location.href = 'index.html';
+                return;
+            }
 
-const response = await fetch('http://localhost:8080/api/admin/users', {
-    method: 'GET',
-    headers: {
-        'Authorization': 'Bearer ' + token, // Buradaki boşluk hayat kurtarır
-        'Content-Type': 'application/json'
-    }
-});
+            try {
+                const response = await fetch('http://localhost:8080/api/admin/users', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer ' + token,
+                        'Content-Type': 'application/json'
+                    }
+                });
                 
                 if (response.ok) {
                     const users = await response.json();
                     const userList = document.getElementById('userList');
-                    userList.innerHTML = users.map(user => `
+                    
+                    userList.innerHTML = users.map(user => {
+                        // Backend'den id veya userId olarak gelme ihtimaline karşı:
+                        const userId = user.id || user.userId; 
+                        
+                        return `
                         <tr>
-                            <td>${user.id}</td>
+                            <td>${userId || '---'}</td>
                             <td>${user.username}</td>
                             <td>${user.email}</td>
                             <td>${user.role}</td>
+                            <td>
+                                <button class="delete-btn" onclick="deleteUser(${userId})">Sil</button>
+                            </td>
                         </tr>
-                    `).join('');
+                        `;
+                    }).join('');
                 } else {
-                    alert("Kullanıcılar yüklenemedi. Yetkin olmayabilir!");
+                    alert("Kullanıcılar yüklenemedi. Yetkiniz olmayabilir!");
                 }
             } catch (err) {
                 console.error("Hata:", err);
+            }
+        }
+
+        async function deleteUser(userId) {
+            if (!userId) {
+                alert("Kullanıcı ID'si bulunamadı!");
+                return;
+            }
+
+            if (!confirm('Bu kullanıcıyı silmek istediğinize emin misiniz?')) return;
+
+            const token = localStorage.getItem('token');
+            try {
+                const response = await fetch(`http://localhost:8080/api/admin/delete/${userId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': 'Bearer ' + token,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    alert("Kullanıcı başarıyla silindi!");
+                    fetchUsers(); // Tabloyu yenile
+                } else {
+                    alert("Silme işlemi başarısız! Yetkiniz olmayabilir veya kullanıcı bulunamadı.");
+                }
+            } catch (err) {
+                console.error("Silme hatası:", err);
+                alert("Sunucuya bağlanılamadı!");
             }
         }
 
@@ -68,9 +122,6 @@ const response = await fetch('http://localhost:8080/api/admin/users', {
             localStorage.clear();
             window.location.href = 'index.html';
         }
-
-        // Sayfa yüklendiğinde kullanıcıları çek
-        window.onload = fetchUsers;
     </script>
 </body>
 </html>

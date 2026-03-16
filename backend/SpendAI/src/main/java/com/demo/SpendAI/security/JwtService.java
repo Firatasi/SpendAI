@@ -24,17 +24,13 @@ public class JwtService {
     @Value("${application.security.jwt.expiration}")
     private long jwtExpiration;
 
-    // 1. Token'dan kullanıcı adını çekme
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
 
-    // 2. Token üretme (Giriş başarılı olduğunda çağrılacak)
-    // 2. Token üretme (Giriş başarılı olduğunda çağrılacak)
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> extraClaims = new HashMap<>();
 
-        // Kullanıcının rollerini alıp "roles" anahtarıyla ekliyoruz
         extraClaims.put("roles", userDetails.getAuthorities().stream()
                 .map(grantedAuthority -> grantedAuthority.getAuthority())
                 .toList());
@@ -52,13 +48,11 @@ public class JwtService {
                 .compact();
     }
 
-    // 3. Token geçerli mi kontrolü
     public boolean isTokenValid(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
         return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
     }
 
-    // --- Yardımcı Metotlar ---
 
     private boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());

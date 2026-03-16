@@ -38,21 +38,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String jwt;
         final String username;
 
-        // 1. Header kontrolü: Bearer ile başlamıyorsa süzgeçten geçme, devam et.
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // 2. Token'ı ayıkla ("Bearer " kısmını at)
         jwt = authHeader.substring(7);
         username = jwtService.extractUsername(jwt);
 
-        // 3. Kullanıcı var mı ve sistemde zaten login değilse doğrula
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
 
-            // 4. Token hala geçerli mi?
             if (jwtService.isTokenValid(jwt,userDetails)) {
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                   userDetails,
@@ -61,7 +57,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 );
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-                // 5. Sisteme "Bu arkadaş onaylıdır, geçebilir" bilgisini ver
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
 

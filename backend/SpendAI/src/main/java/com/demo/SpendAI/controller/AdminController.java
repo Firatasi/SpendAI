@@ -6,9 +6,7 @@ import com.demo.SpendAI.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,10 +22,19 @@ public class AdminController {
 
     @GetMapping("/users")
     public ResponseEntity<List<UserDto>> getAllUsers() {
-        // Veritabanındaki herkesi bul, DTO'ya çevir (şifreler gizli kalsın) ve dön.
         List<UserDto> users = userRepository.findAll().stream()
                 .map(userMapper::toDto)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(users);
     }
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
+        userRepository.deleteById(id);
+        return ResponseEntity.ok("Kullanıcı Silindi");
+    }
+
+
+
+
 }

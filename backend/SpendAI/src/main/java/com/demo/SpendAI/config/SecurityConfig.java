@@ -36,23 +36,19 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // 1. CSRF'yi kapatıyoruz (JWT kullandığımız için gerek yok)
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults()) //frontend
 
-                // 2. Kapı izinlerini ayarlıyoruz
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll() // Kayıt ve Giriş herkese açık
                         .requestMatchers("/api/admin/**").hasAnyAuthority("ADMIN","ROLE_ADMIN") // Sadece Admin
                         .anyRequest().authenticated() // Diğer her şey için login şart
                 )
 
-                // 3. Session yönetimini Stateless yapıyoruz (Sunucuda session tutma, JWT'ye bak)
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
-                // 4. Kendi provider'ımızı ve filtremizi ekliyoruz
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
@@ -62,7 +58,6 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // Frontend adresini buraya net yazıyoruz
         configuration.setAllowedOrigins(List.of("http://127.0.0.1:5500", "http://localhost:5500"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept"));
