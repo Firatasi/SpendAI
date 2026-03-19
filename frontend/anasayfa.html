@@ -2,20 +2,112 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SpendAI - Anasayfa</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* Buraya hızlıca birkaç stil ekledim, istersen style.css'e taşıyabilirsin */
+        .ai-section { background: #f4f7f6; padding: 20px; border-radius: 10px; margin: 20px 0; border: 1px solid #ddd; }
+        textarea { width: 100%; height: 80px; padding: 10px; border-radius: 5px; border: 1px solid #ccc; margin-bottom: 10px; font-family: inherit; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #4CAF50; color: white; }
+        .loading { color: #666; font-style: italic; display: none; }
+    </style>
 </head>
 <body>
     <div class="container">
-        <h1>Hoş Geldin Kullanıcı!</h1>
-        <p>Burası harcamalarını yöneteceğin ana sayfa.</p>
-        <button onclick="logout()">Çıkış Yap</button>
+        <header style="display: flex; justify-content: space-between; align-items: center;">
+            <h1>SpendAI Paneli</h1>
+            <button onclick="logout()" style="background-color: #ff4b2b; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 5px;">Çıkış Yap</button>
+        </header>
+
+        <hr>
+
+        <div class="ai-section">
+            <h3>🤖 Akıllı Harcama Girişi</h3>
+            <p>Harcamanı doğal bir dille yaz, AI senin için kaydetsin:</p>
+            <textarea id="aiInput" placeholder="Örn: Bugün Starbucks'tan 180 TL'ye kahve aldım..."></textarea>
+            <button onclick="sendToAi()" id="aiBtn" style="background-color: #008CBA; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 5px;">Harcamayı Analiz Et ve Kaydet</button>
+            <p id="loadingMsg" class="loading">Yapay zeka analiz ediyor, lütfen bekleyin...</p>
+        </div>
+
+        <div class="list-section">
+            <h3>Geçmiş Harcamaların</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tarih</th>
+                        <th>Kategori</th>
+                        <th>Açıklama</th>
+                        <th>Miktar (TL)</th>
+                    </tr>
+                </thead>
+                <tbody id="spendTableBody">
+                    </tbody>
+            </table>
+        </div>
     </div>
+
     <script>
+        // Sayfa açılır açılmaz güvenlik kontrolü
+        const token = localStorage.getItem('token');
+        const role = localStorage.getItem('role');
+
+        if (!token || (role !== 'USER' && role !== 'ROLE_USER')) {
+            alert("Bu sayfaya erişim yetkiniz yok! Lütfen giriş yapın.");
+            window.location.href = 'index.html';
+        }
+
+        // Çıkış yap
         function logout() {
             localStorage.clear();
             window.location.href = 'index.html';
         }
+
+        // AI'ya Harcama Gönder
+        async function sendToAi() {
+            const message = document.getElementById('aiInput').value;
+            const loadingMsg = document.getElementById('loadingMsg');
+            const aiBtn = document.getElementById('aiBtn');
+
+            if (!message.trim()) {
+                alert("Lütfen bir harcama metni girin.");
+                return;
+            }
+
+            loadingMsg.style.display = "block";
+            aiBtn.disabled = true;
+
+            try {
+                const response = await fetch('http://localhost:8080/api/spends/ai-add', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify({ message: message })
+                });
+
+                if (response.ok) {
+                    const newSpend = await response.json();
+                    alert("Başarıyla kaydedildi: " + newSpend.category + " - " + newSpend.amount + " TL");
+                    document.getElementById('aiInput').value = '';
+                    // Tabloyu güncelle (İstersen listeyi tekrar çekebilirsin)
+                    location.reload(); 
+                } else {
+                    alert("Hata: " + response.statusText);
+                }
+            } catch (error) {
+                console.error("Hata:", error);
+                alert("Sunucuya bağlanılamadı.");
+            } finally {
+                loadingMsg.style.display = "none";
+                aiBtn.disabled = false;
+            }
+        }
+
+
     </script>
 </body>
 </html>

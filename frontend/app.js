@@ -25,16 +25,23 @@ async function sendRequest(endpoint, payload) {
             body: JSON.stringify(payload)
         });
 
-        // VERİYİ BURADA BİR KERE OKUYORUZ VE DEĞİŞKENE ATIYORUZ
         let data = {};
         try {
             data = await response.json(); 
         } catch (e) {
-            console.log("JSON parse edilemedi, muhtemelen gövde boş.");
+            console.log("JSON parse edilemedi.");
         }
 
         if (response.ok) {
-            // Backend'den 'access_token' ve 'role' geldiğini varsayıyoruz
+            // Kayıt işlemi mi yoksa giriş işlemi mi olduğunu anlıyoruz
+            if (endpoint === 'register') {
+                messageElement.style.color = "green";
+                messageElement.innerText = "Kayıt Başarılı! Şimdi giriş yapabilirsiniz.";
+                setTimeout(toggleAuth, 1500); // 1.5 sn sonra giriş ekranına atar
+                return;
+            }
+
+            // GİRİŞ İŞLEMİ (Login)
             const token = data.access_token || data.token;
             const role = data.role; 
 
@@ -46,18 +53,22 @@ async function sendRequest(endpoint, payload) {
                 messageElement.innerText = "Giriş Başarılı! Yönlendiriliyorsunuz...";
 
                 setTimeout(() => {
-                    // Rol kontrolü: ROLE_ADMIN veya ROLE_USER
-                    if (role === 'ROLE_ADMIN') {
+                    // ROL KONTROLÜ VE YÖNLENDİRME
+                    // Backend'den 'ROLE_ADMIN' veya sadece 'ADMIN' gelebilir, ikisini de kontrol ediyoruz
+                    if (role === 'ROLE_ADMIN' || role === 'ADMIN') {
                         window.location.href = 'admin.html';
+                    } else if (role === 'ROLE_USER' || role === 'USER') {
+                        // Kullanıcılar direkt harcama sayfasına (dashboard/anasayfa)
+                        window.location.href = 'anasayfa.html'; 
                     } else {
-                        window.location.href = 'anasayfa.html';
+                        // Bilinmeyen rol durumu
+                        window.location.href = 'index.html';
                     }
                 }, 1000);
             }
         } else {
-            // Hata durumunda zaten datayı yukarıda okumuştuk
             messageElement.style.color = "red";
-            messageElement.innerText = "Hata: " + (data.message || "Giriş yapılamadı. Bilgileri kontrol et.");
+            messageElement.innerText = "Hata: " + (data.message || "İşlem başarısız. Bilgileri kontrol et.");
         }
 
     } catch (error) {
@@ -84,6 +95,5 @@ document.getElementById('loginForm').addEventListener('submit', (e) => {
         username: document.getElementById('logUsername').value,
         password: document.getElementById('logPassword').value
     };
-    // Backend'deki metodun @PostMapping("/login") ise burası böyle kalmalı
     sendRequest('login', payload); 
 });
