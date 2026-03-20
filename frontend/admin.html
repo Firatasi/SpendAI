@@ -4,20 +4,6 @@
     <meta charset="UTF-8">
     <title>SpendAI - Admin Panel</title>
     <link rel="stylesheet" href="style.css">
-    <style>
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
-        th { background-color: #3498db; color: white; }
-        .delete-btn { 
-            background-color: #e74c3c; 
-            color: white; 
-            border: none; 
-            padding: 8px 12px; 
-            cursor: pointer; 
-            border-radius: 4px; 
-        }
-        .delete-btn:hover { background-color: #c0392b; }
-    </style>
 </head>
 <body>
     <div class="container" style="max-width: 900px;">
@@ -41,7 +27,6 @@
     </div>
 
     <script>
-        // Sayfa yüklendiğinde kullanıcıları çek
         window.onload = fetchUsers;
 
         async function fetchUsers() {
@@ -65,7 +50,6 @@
                     const userList = document.getElementById('userList');
                     
                     userList.innerHTML = users.map(user => {
-                        // Backend'den id veya userId olarak gelme ihtimaline karşı:
                         const userId = user.id || user.userId; 
                         
                         return `
@@ -108,7 +92,7 @@
 
                 if (response.ok) {
                     alert("Kullanıcı başarıyla silindi!");
-                    fetchUsers(); // Tabloyu yenile
+                    fetchUsers();
                 } else {
                     alert("Silme işlemi başarısız! Yetkiniz olmayabilir veya kullanıcı bulunamadı.");
                 }

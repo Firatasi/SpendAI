@@ -5,21 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SpendAI - Anasayfa</title>
     <link rel="stylesheet" href="style.css">
-    <style>
-        /* Buraya hızlıca birkaç stil ekledim, istersen style.css'e taşıyabilirsin */
-        .ai-section { background: #f4f7f6; padding: 20px; border-radius: 10px; margin: 20px 0; border: 1px solid #ddd; }
-        textarea { width: 100%; height: 80px; padding: 10px; border-radius: 5px; border: 1px solid #ccc; margin-bottom: 10px; font-family: inherit; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
-        th { background-color: #4CAF50; color: white; }
-        .loading { color: #666; font-style: italic; display: none; }
-    </style>
 </head>
 <body>
     <div class="container">
         <header style="display: flex; justify-content: space-between; align-items: center;">
             <h1>SpendAI Paneli</h1>
-            <button onclick="logout()" style="background-color: #ff4b2b; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 5px;">Çıkış Yap</button>
+            <button onclick="logout()" style="background-color: #ff4b2b; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 5px; width: auto;">Çıkış Yap</button>
         </header>
 
         <hr>
@@ -28,7 +19,7 @@
             <h3>🤖 Akıllı Harcama Girişi</h3>
             <p>Harcamanı doğal bir dille yaz, AI senin için kaydetsin:</p>
             <textarea id="aiInput" placeholder="Örn: Bugün Starbucks'tan 180 TL'ye kahve aldım..."></textarea>
-            <button onclick="sendToAi()" id="aiBtn" style="background-color: #008CBA; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 5px;">Harcamayı Analiz Et ve Kaydet</button>
+            <button onclick="sendToAi()" id="aiBtn" style="background-color: #008CBA; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 5px; width: auto;">Harcamayı Analiz Et ve Kaydet</button>
             <p id="loadingMsg" class="loading">Yapay zeka analiz ediyor, lütfen bekleyin...</p>
         </div>
 
@@ -50,7 +41,6 @@
     </div>
 
     <script>
-        // Sayfa açılır açılmaz güvenlik kontrolü
         const token = localStorage.getItem('token');
         const role = localStorage.getItem('role');
 
@@ -59,13 +49,11 @@
             window.location.href = 'index.html';
         }
 
-        // Çıkış yap
         function logout() {
             localStorage.clear();
             window.location.href = 'index.html';
         }
 
-        // AI'ya Harcama Gönder
         async function sendToAi() {
             const message = document.getElementById('aiInput').value;
             const loadingMsg = document.getElementById('loadingMsg');
@@ -93,7 +81,6 @@
                     const newSpend = await response.json();
                     alert("Başarıyla kaydedildi: " + newSpend.category + " - " + newSpend.amount + " TL");
                     document.getElementById('aiInput').value = '';
-                    // Tabloyu güncelle (İstersen listeyi tekrar çekebilirsin)
                     location.reload(); 
                 } else {
                     alert("Hata: " + response.statusText);

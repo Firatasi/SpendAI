@@ -1,8 +1,6 @@
-// Backend'deki @RequestMapping ile birebir aynı olmalı!
 const API_URL = "http://localhost:8080/api/auth"; 
 const messageElement = document.getElementById('message');
 
-// Panel Değiştirme (Giriş/Kayıt arası geçiş)
 function toggleAuth() {
     const loginSec = document.getElementById('loginSection');
     const registerSec = document.getElementById('registerSection');
@@ -11,7 +9,6 @@ function toggleAuth() {
     messageElement.innerText = "";
 }
 
-// Ortak İstek Gönderme Fonksiyonu
 async function sendRequest(endpoint, payload) {
     try {
         console.log(`İstek atılıyor: ${API_URL}/${endpoint}`);
@@ -33,15 +30,13 @@ async function sendRequest(endpoint, payload) {
         }
 
         if (response.ok) {
-            // Kayıt işlemi mi yoksa giriş işlemi mi olduğunu anlıyoruz
             if (endpoint === 'register') {
                 messageElement.style.color = "green";
                 messageElement.innerText = "Kayıt Başarılı! Şimdi giriş yapabilirsiniz.";
-                setTimeout(toggleAuth, 1500); // 1.5 sn sonra giriş ekranına atar
+                setTimeout(toggleAuth, 1500); 
                 return;
             }
 
-            // GİRİŞ İŞLEMİ (Login)
             const token = data.access_token || data.token;
             const role = data.role; 
 
@@ -53,15 +48,11 @@ async function sendRequest(endpoint, payload) {
                 messageElement.innerText = "Giriş Başarılı! Yönlendiriliyorsunuz...";
 
                 setTimeout(() => {
-                    // ROL KONTROLÜ VE YÖNLENDİRME
-                    // Backend'den 'ROLE_ADMIN' veya sadece 'ADMIN' gelebilir, ikisini de kontrol ediyoruz
                     if (role === 'ROLE_ADMIN' || role === 'ADMIN') {
                         window.location.href = 'admin.html';
                     } else if (role === 'ROLE_USER' || role === 'USER') {
-                        // Kullanıcılar direkt harcama sayfasına (dashboard/anasayfa)
                         window.location.href = 'anasayfa.html'; 
                     } else {
-                        // Bilinmeyen rol durumu
                         window.location.href = 'index.html';
                     }
                 }, 1000);
@@ -78,7 +69,6 @@ async function sendRequest(endpoint, payload) {
     }
 }
 
-// Form Dinleyicileri
 document.getElementById('registerForm').addEventListener('submit', (e) => {
     e.preventDefault();
     const payload = {
