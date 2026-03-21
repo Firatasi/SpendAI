@@ -41,60 +41,121 @@
     </div>
 
     <script>
-        const token = localStorage.getItem('token');
-        const role = localStorage.getItem('role');
+    const token = localStorage.getItem('token');
+    const role = localStorage.getItem('role');
 
-        if (!token || (role !== 'USER' && role !== 'ROLE_USER')) {
-            alert("Bu sayfaya erişim yetkiniz yok! Lütfen giriş yapın.");
-            window.location.href = 'index.html';
+    if (!token || (role !== 'USER' && role !== 'ROLE_USER')) {
+        alert("Bu sayfaya erişim yetkiniz yok! Lütfen giriş yapın.");
+        window.location.href = 'index.html';
+    }
+
+    function logout() {
+        localStorage.clear();
+        window.location.href = 'index.html';
+    }
+
+    async function sendToAi() {
+        const message = document.getElementById('aiInput').value;
+        const loadingMsg = document.getElementById('loadingMsg');
+        const aiBtn = document.getElementById('aiBtn');
+
+        if (!message.trim()) {
+            alert("Lütfen bir harcama metni girin.");
+            return;
         }
 
-        function logout() {
-            localStorage.clear();
-            window.location.href = 'index.html';
+        loadingMsg.style.display = "block";
+        aiBtn.disabled = true;
+
+        try {
+            const response = await fetch('http://localhost:8080/api/spends/ai-add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                },
+                body: JSON.stringify({ message: message })
+            });
+
+            if (response.ok) {
+                const newSpend = await response.json();
+                alert("Başarıyla kaydedildi: " + newSpend.category + " - " + newSpend.amount + " TL");
+                document.getElementById('aiInput').value = '';
+                await loadSpends(); // sayfayı komple yenilemek yerine tabloyu tekrar yükle
+            } else {
+                const errorText = await response.text();
+                alert("Hata: " + errorText);
+            }
+        } catch (error) {
+            console.error("Hata:", error);
+            alert("Sunucuya bağlanılamadı.");
+        } finally {
+            loadingMsg.style.display = "none";
+            aiBtn.disabled = false;
         }
+    }
 
-        async function sendToAi() {
-            const message = document.getElementById('aiInput').value;
-            const loadingMsg = document.getElementById('loadingMsg');
-            const aiBtn = document.getElementById('aiBtn');
+    async function loadSpends() {
+        const spendTableBody = document.getElementById('spendTableBody');
+        spendTableBody.innerHTML = '';
 
-            if (!message.trim()) {
-                alert("Lütfen bir harcama metni girin.");
+        try {
+            const response = await fetch('http://localhost:8080/api/spends/getAllSpends', {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error("Harcamalar alınamadı. Status: " + response.status);
+            }
+
+            const spends = await response.json();
+            console.log("Harcamalarım:", spends);
+
+            if (!spends || spends.length === 0) {
+                spendTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="4" style="text-align:center;">Henüz harcama bulunmuyor.</td>
+                    </tr>
+                `;
                 return;
             }
 
-            loadingMsg.style.display = "block";
-            aiBtn.disabled = true;
+            spends.forEach(spend => {
+                const row = document.createElement('tr');
 
-            try {
-                const response = await fetch('http://localhost:8080/api/spends/ai-add', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + token
-                    },
-                    body: JSON.stringify({ message: message })
-                });
+                const formattedDate = spend.date
+                    ? new Date(spend.date).toLocaleDateString('tr-TR')
+                    : '-';
 
-                if (response.ok) {
-                    const newSpend = await response.json();
-                    alert("Başarıyla kaydedildi: " + newSpend.category + " - " + newSpend.amount + " TL");
-                    document.getElementById('aiInput').value = '';
-                    location.reload(); 
-                } else {
-                    alert("Hata: " + response.statusText);
-                }
-            } catch (error) {
-                console.error("Hata:", error);
-                alert("Sunucuya bağlanılamadı.");
-            } finally {
-                loadingMsg.style.display = "none";
-                aiBtn.disabled = false;
-            }
+                row.innerHTML = `
+                    <td>${formattedDate}</td>
+                    <td>${spend.category ?? '-'}</td>
+                    <td>${spend.description ?? '-'}</td>
+                    <td>${spend.amount ?? '-'}</td>
+                `;
+
+                spendTableBody.appendChild(row);
+            });
+
+        } catch (error) {
+            console.error("Harcamalar yüklenirken hata oluştu:", error);
+            spendTableBody.innerHTML = `
+                <tr>
+                    <td colspan="4" style="text-align:center; color:red;">
+                        Harcamalar yüklenemedi.
+                    </td>
+                </tr>
+            `;
         }
+    }
 
-
-    </script>
+    // Sayfa açılınca harcamaları getir
+    window.onload = function () {
+        loadSpends();
+    };
+</script>
 </body>
 </html>

@@ -19,9 +19,11 @@ public class AiService {
 
     public String analyzeSpending(String message) {
         return chatClient.prompt()
-                .user("Şu harcamayı analiz et ve sadece json dön" + message)
+                .user("Şu harcamayı analiz et ve sadece json dön" + "\"Sadece saf JSON dön, markdown formatı (```json) kullanma, açıklama yapma.\"" + message)
                 .call()
                 .content();
     }
+
+
 
 }

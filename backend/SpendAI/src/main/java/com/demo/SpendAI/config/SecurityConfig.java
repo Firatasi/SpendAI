@@ -42,6 +42,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll() // Kayıt ve Giriş herkese açık
                         .requestMatchers("/api/admin/**").hasAnyAuthority("ADMIN","ROLE_ADMIN") // Sadece Admin
+                        .requestMatchers("/api/spends/**").hasAnyAuthority("USER","ROLE_USER") // SADECE USER
                         .anyRequest().authenticated() // Diğer her şey için login şart
                 )
 
