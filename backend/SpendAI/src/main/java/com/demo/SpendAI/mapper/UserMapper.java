@@ -13,6 +13,7 @@ public interface UserMapper {
     @Mapping(target = "role", ignore = true) // Rolü Service katmanında set et
     User toEntity(RegisterRequest request);
 
+    @Mapping(source = "id", target = "id")
     UserDto toDto(User user);
 
 
