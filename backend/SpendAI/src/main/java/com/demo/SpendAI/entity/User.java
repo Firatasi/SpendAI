@@ -39,4 +39,10 @@ public class User {
     private List<Spend> spend;
 
 
+    // --- ÖDÜL SİSTEMİ ALANLARI ---
+    private Integer xp = 0;
+    private Integer level = 1;
+    private Integer totalSavings = 0; // Tasarruf edilen tahmini miktar
+
+
 }
