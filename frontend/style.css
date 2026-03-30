@@ -67,6 +67,55 @@ border-radius: 5px;
 padding: 3px;
 }
 
+.reward-card {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.rank-badge {
+    background: #FFD700;
+    color: #333;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 0.9em;
+    display: inline-block;
+    margin-top: 8px;
+}
+
+.xp-container {
+    width: 220px;
+    background: rgba(255,255,255,0.2);
+    height: 12px;
+    border-radius: 6px;
+    margin-top: 8px;
+    overflow: hidden;
+    position: relative;
+}
+
+.xp-bar {
+    height: 100%;
+    background: #fff;
+    width: 0%; /* JS ile güncellenecek */
+    transition: width 1s ease-in-out;
+}
+
+.category-tag {
+    background: #e1f5fe;
+    color: #01579b;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.85em;
+    font-weight: bold;
+}
+
 
 
 

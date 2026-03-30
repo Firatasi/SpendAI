@@ -13,6 +13,20 @@
             <button onclick="logout()" style="background-color: #ff4b2b; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 5px; width: auto;">Çıkış Yap</button>
         </header>
 
+        <!-- YENİ: Rütbe ve XP Göstergesi (Sadece Veri Varsa Görünür) -->
+        <div id="statusCard" class="reward-card" style="display: none;">
+            <div>
+                <span id="rankText" class="rank-badge">Yeni Üye</span>
+                <div style="margin-top: 5px; font-size: 0.9em;">Seviye: <b id="levelText">1</b></div>
+            </div>
+            <div style="text-align: right;">
+                <span id="xpText" style="font-size: 0.8em;">0 / 100 XP</span>
+                <div class="xp-bar-bg">
+                    <div id="xpBar" class="xp-bar-fill"></div>
+                </div>
+            </div>
+        </div>
+
         <hr>
 
         <div class="ai-section">
@@ -20,7 +34,7 @@
             <p>Harcamanı doğal bir dille yaz, AI senin için kaydetsin:</p>
             <textarea id="aiInput" placeholder="Örn: Bugün Starbucks'tan 180 TL'ye kahve aldım..."></textarea>
             <button onclick="sendToAi()" id="aiBtn" style="background-color: #008CBA; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 5px; width: auto;">Harcamayı Analiz Et ve Kaydet</button>
-            <p id="loadingMsg" class="loading">Yapay zeka analiz ediyor, lütfen bekleyin...</p>
+            <p id="loadingMsg" class="loading" style="display:none;">Yapay zeka analiz ediyor, lütfen bekleyin...</p>
         </div>
 
         <div class="list-section">
@@ -78,10 +92,10 @@
             });
 
             if (response.ok) {
-                const newSpend = await response.json();
-                alert("Başarıyla kaydedildi: " + newSpend.category + " - " + newSpend.amount + " TL");
+                // Backend artık hem harcamayı hem güncel puanı döndüğü için komple yenileme yapıyoruz
+                alert("Harcama başarıyla kaydedildi!");
                 document.getElementById('aiInput').value = '';
-                await loadSpends(); // sayfayı komple yenilemek yerine tabloyu tekrar yükle
+                await loadSpends(); 
             } else {
                 const errorText = await response.text();
                 alert("Hata: " + errorText);
@@ -97,8 +111,7 @@
 
     async function loadSpends() {
         const spendTableBody = document.getElementById('spendTableBody');
-        spendTableBody.innerHTML = '';
-
+        
         try {
             const response = await fetch('http://localhost:8080/api/spends/getAllSpends', {
                 method: 'GET',
@@ -111,10 +124,31 @@
                 throw new Error("Harcamalar alınamadı. Status: " + response.status);
             }
 
-            const spends = await response.json();
-            console.log("Harcamalarım:", spends);
+            const data = await response.json();
+            console.log("Sunucudan Gelen Veri:", data);
 
-            if (!spends || spends.length === 0) {
+            // 1. Durum Kartını Güncelle (Eğer veri obje formatındaysa)
+            if (data.rank || data.level !== undefined) {
+                document.getElementById('statusCard').style.display = 'flex';
+                document.getElementById('rankText').innerText = data.rank || "Yeni Üye";
+                document.getElementById('levelText').innerText = data.level || 1;
+                const xp = data.xp || 0;
+                const progress = xp % 100;
+                document.getElementById('xpText').innerText = progress + " / 100 XP";
+                document.getElementById('xpBar').style.width = progress + "%";
+            }
+
+            // 2. Harcama Listesini Al (Dizi mi yoksa obje içindeki dizi mi kontrol et)
+            let spendsArray = [];
+            if (Array.isArray(data)) {
+                spendsArray = data;
+            } else if (data.spends && Array.isArray(data.spends)) {
+                spendsArray = data.spends;
+            }
+
+            spendTableBody.innerHTML = '';
+
+            if (spendsArray.length === 0) {
                 spendTableBody.innerHTML = `
                     <tr>
                         <td colspan="4" style="text-align:center;">Henüz harcama bulunmuyor.</td>
@@ -123,9 +157,8 @@
                 return;
             }
 
-            spends.forEach(spend => {
+            spendsArray.forEach(spend => {
                 const row = document.createElement('tr');
-
                 const formattedDate = spend.date
                     ? new Date(spend.date).toLocaleDateString('tr-TR')
                     : '-';
@@ -136,7 +169,6 @@
                     <td>${spend.description ?? '-'}</td>
                     <td>${spend.amount ?? '-'}</td>
                 `;
-
                 spendTableBody.appendChild(row);
             });
 
@@ -152,7 +184,6 @@
         }
     }
 
-    // Sayfa açılınca harcamaları getir
     window.onload = function () {
         loadSpends();
     };
