@@ -152,7 +152,7 @@ border-radius: 4px;
 }
 
 textarea { 
-    width: 100%; height: 80px; padding: 10px; border-radius: 5px; border: 1px solid #ccc; margin-bottom: 10px; font-family: inherit; 
+    width: 100%; height: 80px; padding: 1px; border-radius: 5px; border: 1px solid #ccc; margin-bottom: 10px; font-family: inherit; 
 }
 
 table { 
